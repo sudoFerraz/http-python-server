@@ -1,5 +1,7 @@
 import socket
 import threading
+import httpserver
+import sys
 
 class ThreadedServer(object):
     def __init__(self, host, port):
@@ -14,15 +16,15 @@ class ThreadedServer(object):
         while True:
             client, address = self.sock.accept()
             client.settimeout(60)
-            threading.Thread(target = self.listenToClient, args = (client, \
+            threading.Thread(target = httpserver.Conexao, args = (client,\
                 address)).start()
+            print threading.enumerate()
 
     def listenToClient(self, client, address):
         size = 1024
         while True:
             try:
                 data = client.recv(size)
-                print ("Recebendo dados" + str(data))
                 if data:
                     #set the response to echo back 
                     response = data
@@ -36,5 +38,5 @@ class ThreadedServer(object):
 
 
 if __name__ == "__main__":
-    port_num = int(input("Port: "))
+    port_num = int(sys.argv[1])
     ThreadedServer('', port_num).listen()

@@ -19,10 +19,6 @@ import sys
 import time
 import string
 import re
-import threading
-import time
-import thread
-
 
 # Definindo var. globais
 get = "GET"
@@ -39,7 +35,7 @@ def main():
     host = ''
     # Porta e passada pelo argumento da funcao
     port = int(sys.argv[1])
-    # Define familia de enderecos IPV4, e que estamos usando streaming()
+    # Define familha de enderecos IPV4, e que estamos usando streaming()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # Faz o bind do socket para pode escutar
@@ -48,89 +44,31 @@ def main():
     print "Aguardando conexao"
     s.listen(10)
     while 1:
-        try:
-            data = s.recv(1024)
-        except:
-            break
-        if data:
-            thread1 = threads(1, s)
-            thread1.start()
-        #Conexao(s)
-        #thread1 = threads(1, s)
-        #thread1.start()
+        Conexao(s)
 
 
 def Conexao(sockcliente, addrcliente):
     """Abrindo conexao com cliente quando conectado."""
-    #sockcliente, addrcliente = Socketcliente.accept()
+    # sockcliente, addrcliente = Socketcliente.accept()
     print "Conectado com o cliente %s" % str(addrcliente)
-    # c = "\r\n\r\n\r\n"
-    # cc = "\n\n\n"
-    # if c in message:
-    #    break
-    # check = sockcliente.recv(1024)
-    # if not check:
-    #    break
-    metodo, caminhoSplitado, corpo, tamanho = recebe_handler(sockcliente)
-    # print metodo
-    # print caminhoSplitado
-    # print corpo
+    c = "\r\n\r\n"
+    message = ''
+    while 1:
+        message += sockcliente.recv(1024)
+        print message
+        if c in message:
+            break
+        # check = sockcliente.recv(1024)
+        # if not check:
+        #    break
+    metodo, caminhoSplitado, corpo = Parsing(message)
+    print metodo
+    print caminhoSplitado
+    print corpo
     resultado = metodo_handler(metodo, caminhoSplitado, corpo)
     sockcliente.send(resultado)
     print resultado
     sockcliente.close()
-    
-
-class threads(threading.Thread):
-    """Definindo classe de threads do servidor."""
-    def __init__(self, threadID, socket):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.socket = socket
-    def run(self):
-       Conexao(self.socket)
-       print "DOIDO"
-    def teste(self):
-        print "Estou rodando"
-
-        
-def recebe_handler(socket):
-    """Manuseia o recebimento de dados pelo cliente."""
-    message = ''
-    cccc = "\n\n"
-    ccc = "\r\n\r\n"
-    c = "\n\n\n"
-    cc = "\r\n\r\n\r\n"
-    while 1:
-        message += socket.recv(1024)
-        # print message
-        metodo, caminhoSplitado, corpo, tamanho = Parsing(message)
-        # print corpo
-        if metodo == get:
-            if ccc in message or cccc in message:
-                break
-        elif metodo == header:
-            if ccc in message or cccc in message:
-                break
-        elif metodo == delete:
-            if ccc in message or cccc in message:
-                break
-        elif metodo == put:
-            if tamanho is None:
-                if cc in message or c in message:
-                    break
-            if tamanho is not None:
-                if int(len(corpo)) >= int(tamanho):
-                    break
-        elif metodo == post:
-            if tamanho is None:
-                if cc in message or c in message:
-                    break
-            if tamanho is not None:
-                if int(len(corpo)) >= int(tamanho):
-                    break
-    metodo, caminhoSplitado, corpo, tamanho = Parsing(message)
-    return metodo, caminhoSplitado, corpo, tamanho
 
 
 def metodo_handler(metodo, caminho, corpo):
@@ -170,7 +108,6 @@ def acha_objeto(caminho):
             for j in range(0, len(nodo.filhos), 1):
                 if caminho[i] == nodo.filhos[j].nome:
                     nodo = nodo.filhos[j]
-                    break
     if caminho[len(caminho)-1] != nodo.nome:
         nodo = None
         return None
@@ -181,33 +118,13 @@ def acha_objeto(caminho):
 def Parsing(message):
     """Faz parsing e separa uma lista para o metodo e caminhos splitados."""
     linhas = message.split("\n")
-    content = 'Content-Length:'
-    if content in message:
-        tamanho = message.split("Content-Length: ")
-        tamanho = tamanho[1].split("\n")
-        tamanho = tamanho[0]
-    else:
-        tamanho = None
-    # print tamanho
+    data = message.split("\r\n\r\n")
+    data = data[1]
     linhas2 = linhas[0].split(" HTTP")
     linhas3 = linhas2[0].split(" /")
     caminho = linhas3[1].split("/")
     metodo = linhas3[0]
-    data = message.split("\r\n\r\n")
-    if len(data) == 1:
-        data = message.split("\n\n")
-        if len(data) == 1:
-            data = ''
-        elif len(data) != 1:
-            data = data[1:]
-    else:
-        data = data[1:]
-    data = ''.join(data)
-    # print data
-    if tamanho is not None:
-        if len(data) > int(tamanho):
-            data = (data[:int(tamanho)])
-    return metodo, caminho, data, tamanho
+    return metodo, caminho, data
 
 
 def traduz(mensagem):
