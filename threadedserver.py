@@ -15,18 +15,18 @@ class ThreadedServer(object):
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
-            client.settimeout(60)
+            client.settimeout(30)
             threading.Thread(target = httpserver.Conexao, args = (client,\
                 address)).start()
-            print threading.enumerate()
+            print '\n' + str(threading.enumerate())
 
-    def listenToClient(self, client, address):
+""" def listenToClient(self, client, address):
         size = 1024
         while True:
             try:
                 data = client.recv(size)
                 if data:
-                    #set the response to echo back 
+                    # set the response to echo back
                     response = data
                     print ("Enviando resposta")
                     client.send(response)
@@ -35,6 +35,7 @@ class ThreadedServer(object):
             except:
                 client.close()
                 return False
+"""
 
 
 if __name__ == "__main__":

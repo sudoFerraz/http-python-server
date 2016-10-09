@@ -48,52 +48,19 @@ def main():
     print "Aguardando conexao"
     s.listen(10)
     while 1:
-        try:
-            data = s.recv(1024)
-        except:
-            break
-        if data:
-            thread1 = threads(1, s)
-            thread1.start()
-        #Conexao(s)
-        #thread1 = threads(1, s)
-        #thread1.start()
+        Conexao(s)
 
 
 def Conexao(sockcliente, addrcliente):
     """Abrindo conexao com cliente quando conectado."""
-    #sockcliente, addrcliente = Socketcliente.accept()
     print "Conectado com o cliente %s" % str(addrcliente)
-    # c = "\r\n\r\n\r\n"
-    # cc = "\n\n\n"
-    # if c in message:
-    #    break
-    # check = sockcliente.recv(1024)
-    # if not check:
-    #    break
     metodo, caminhoSplitado, corpo, tamanho = recebe_handler(sockcliente)
-    # print metodo
-    # print caminhoSplitado
-    # print corpo
     resultado = metodo_handler(metodo, caminhoSplitado, corpo)
     sockcliente.send(resultado)
     print resultado
     sockcliente.close()
-    
+    return False
 
-class threads(threading.Thread):
-    """Definindo classe de threads do servidor."""
-    def __init__(self, threadID, socket):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.socket = socket
-    def run(self):
-       Conexao(self.socket)
-       print "DOIDO"
-    def teste(self):
-        print "Estou rodando"
-
-        
 def recebe_handler(socket):
     """Manuseia o recebimento de dados pelo cliente."""
     message = ''
