@@ -33,33 +33,33 @@ header = "HEAD"
 __metaclass__ = type
 
 
-def main():
-    """Funcao principal para conexao."""
+# def main():
+    # """Funcao principal para conexao."""
     # Define o host que pode ser qualquer um, estamos servindo...
-    host = ''
+    # host = ''
     # Porta e passada pelo argumento da funcao
-    port = int(sys.argv[1])
+    # port = int(sys.argv[1])
     # Define familia de enderecos IPV4, e que estamos usando streaming()
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # Faz o bind do socket para pode escutar
-    s.bind((host, port))
-    print "Servidor rodando na porta %d" % port
-    print "Aguardando conexao"
-    s.listen(10)
-    while 1:
-        Conexao(s)
+    # s.bind((host, port))
+    # print "Servidor rodando na porta %d" % port
+    # print "Aguardando conexao"
+    # s.listen(10)
+    # while 1:
+        # Conexao(s)
 
 
-def Conexao(sockcliente, addrcliente):
-    """Abrindo conexao com cliente quando conectado."""
-    print "Conectado com o cliente %s" % str(addrcliente)
-    metodo, caminhoSplitado, corpo, tamanho = recebe_handler(sockcliente)
-    resultado = metodo_handler(metodo, caminhoSplitado, corpo)
-    sockcliente.send(resultado)
-    print resultado
-    sockcliente.close()
-    return False
+# def Conexao(sockcliente, addrcliente):
+    # """Abrindo conexao com cliente quando conectado."""
+    # print "Conectado com o cliente %s" % str(addrcliente)
+    # metodo, caminhoSplitado, corpo, tamanho = recebe_handler(sockcliente)
+    # resultado = metodo_handler(metodo, caminhoSplitado, corpo)
+    # sockcliente.send(resultado)
+    # print resultado
+    # sockcliente.close()
+    # return False
 
 def recebe_handler(socket):
     """Manuseia o recebimento de dados pelo cliente."""

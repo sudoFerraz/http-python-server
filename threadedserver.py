@@ -3,6 +3,8 @@ import threading
 import httpserver
 import sys
 
+mutex = threading.Lock()
+
 class ThreadedServer(object):
     def __init__(self, host, port):
         self.host = host
@@ -16,26 +18,24 @@ class ThreadedServer(object):
         while True:
             client, address = self.sock.accept()
             client.settimeout(30)
-            threading.Thread(target = httpserver.Conexao, args = (client,\
+            threading.Thread(target = self.Conexao, args = (client,\
                 address)).start()
             print '\n' + str(threading.enumerate())
 
-""" def listenToClient(self, client, address):
-        size = 1024
-        while True:
-            try:
-                data = client.recv(size)
-                if data:
-                    # set the response to echo back
-                    response = data
-                    print ("Enviando resposta")
-                    client.send(response)
-                else:
-                    raise error('Client Disconnected')
-            except:
-                client.close()
-                return False
-"""
+    def Conexao(self, cliente, address):
+        print "Conectado com o cliente %s" % str(address)
+        metodo, caminhoSplitado, corpo, tamanho = httpserver.recebe_handler\
+            (cliente)
+        mutex.acquire()
+        try:
+            resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
+                corpo)
+        finally:
+            mutex.release()
+        cliente.send(resultado)
+        print resultado
+        cliente.close()
+        return False
 
 
 if __name__ == "__main__":
