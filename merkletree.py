@@ -15,11 +15,9 @@ class merkle(object):
 
         try:
             if file_hashes:
-                print "\n[+]Lendo arquivo..."
+                print "[+]"
         except ValueError:
             print "\nArquivo de hashes nao presente."
-        finally:
-            print "\nComecando processo."
 
         # embaralha hashes
         for m in sorted(file_hashes):

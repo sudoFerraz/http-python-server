@@ -24,17 +24,25 @@ class ThreadedServer(object):
             print '\n' + str(threading.enumerate())
 
     def Conexao(self, cliente, address):
+        threadmerkle = fileserver.root.merkle_hash()
         print "Conectado com o cliente %s" % str(address)
         metodo, caminhoSplitado, corpo, tamanho = httpserver.recebe_handler\
             (cliente)
         mutex.acquire()
         print str(fileserver.root.hash)
         print str(fileserver.root.merkle_hash())
-        try:
-            resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
-                corpo)
-        finally:
-            mutex.release()
+        while True:
+            if threadmerkle == fileserver.root.merkle_hash():
+                resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
+                    corpo)
+                break
+            else:
+                threadmerkle = fileserver.root.merkle_hash()
+        # try:
+            # resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
+                # corpo)
+        # finally:
+            # mutex.release()
         cliente.send(resultado)
         print resultado
         cliente.close()
