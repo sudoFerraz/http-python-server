@@ -35,34 +35,6 @@ header = "HEAD"
 __metaclass__ = type
 
 
-# def main():
-    # """Funcao principal para conexao."""
-    # Define o host que pode ser qualquer um, estamos servindo...
-    # host = ''
-    # Porta e passada pelo argumento da funcao
-    # port = int(sys.argv[1])
-    # Define familia de enderecos IPV4, e que estamos usando streaming()
-    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # Faz o bind do socket para pode escutar
-    # s.bind((host, port))
-    # print "Servidor rodando na porta %d" % port
-    # print "Aguardando conexao"
-    # s.listen(10)
-    # while 1:
-        # Conexao(s)
-
-
-# def Conexao(sockcliente, addrcliente):
-    # """Abrindo conexao com cliente quando conectado."""
-    # print "Conectado com o cliente %s" % str(addrcliente)
-    # metodo, caminhoSplitado, corpo, tamanho = recebe_handler(sockcliente)
-    # resultado = metodo_handler(metodo, caminhoSplitado, corpo)
-    # sockcliente.send(resultado)
-    # print resultado
-    # sockcliente.close()
-    # return False
-
 def recebe_handler(socket):
     """Manuseia o recebimento de dados pelo cliente."""
     message = ''
@@ -325,63 +297,5 @@ def Header_Handler(objeto):
     return mensagem
 
 
-class controle_global():
-    """Lista com todos os arquivos ja criados."""
-
-    def __init__(self, nome):
-        """Inicializa a lista global."""
-        self.criados = []
 
 
-class Fileserver():
-    """Definindo estrutura do servidor de arquivos."""
-
-    def __init__(self, nome):
-        """Inicializando um arquivo na arvore(diretorio tambem)."""
-        self.nome = nome
-        self.filhos = []
-        self.nomefilhos = []
-        self.data = None
-        self.pai = None
-        self.nomepai = ''
-        self.created = int(time.time())
-        self.modified = int(time.time())
-        self.version = 0
-
-    def insere(self, filho):
-        """Inserir na lista de arquivos subjacentes."""
-        self.filhos.append(filho)
-        self.nomefilhos.append(filho.nome)
-        filho.pai = self
-
-    def insere_dentro(self, pai):
-        """Insere arquivo dentro de um pai."""
-        pai.filhos.append(self)
-        pai.nomefilhos.append(self.nome)
-
-    def insere_dados(self, data):
-        """Insere dados dentro de um arquivo."""
-        self.data = data
-        self.modified = int(time.time())
-
-    def remove_filho(self, filho):
-        """Remove um arquivo do diretorio."""
-        self.filhos.extend(filho.filhos)
-        self.filhos.remove(filho)
-        self.nomefilhos.remove(filho.nome)
-        self.modified = int(time.time())
-        del filho
-
-    def remove_arq(self):
-        """Remove o proprio arquivo que chama."""
-        self.pai.filhos.extend(self.filhos)
-        self.pai.filhos.remove(self)
-        self.pai.nomefilhos.remove(self.nome)
-        self.pai.modified = int(time.time())
-        del self
-
-    def get_dados(self):
-        """Devolve os dados guardados no arquivo."""
-        return self.data
-
-# root = Fileserver("/")

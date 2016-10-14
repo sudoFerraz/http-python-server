@@ -2,6 +2,7 @@ import socket
 import threading
 import httpserver
 import sys
+import fileserver
 
 mutex = threading.Lock()
 
@@ -27,6 +28,8 @@ class ThreadedServer(object):
         metodo, caminhoSplitado, corpo, tamanho = httpserver.recebe_handler\
             (cliente)
         mutex.acquire()
+        print str(fileserver.root.hash)
+        print str(fileserver.root.merkle_hash())
         try:
             resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
                 corpo)

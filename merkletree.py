@@ -47,6 +47,7 @@ class merkle(object):
             return self.acha_root(secondary)
 
     def merkle_handler(self, file_hashes, hash):
+        """Apagar um hash da lista."""
         hash_len = len(file_hashes)
 
         for k in xrange(0, hash_len):
@@ -55,20 +56,4 @@ class merkle(object):
     
         return file_hashes
 
-
-if __name__ == '__main__':
-    import uuid
-
-    file_hashes = []
-    for i in range(0,13):
-        file_hashes.append(str(uuid.uuid4().hex))
-
-    print 'Finding the merkle tree hash of {0} random hashes'.format(\
-          len(file_hashes))
-
-    cls = merkle()
-    mk = cls.acha_root(file_hashes)
-    print 'The merkle tree hash of the hashes below is : {0}'.format(mk)
-    print '...'
-    print file_hashes
 

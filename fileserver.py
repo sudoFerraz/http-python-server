@@ -42,7 +42,7 @@ class arquivo():
         file_hashes = merkle.merkle_handler(file_hashes, self.hash)
         del self
 
-    def root_hash():
+    def merkle_hash(self):
         roothash = merkle.acha_root(file_hashes)
         
         return roothash
