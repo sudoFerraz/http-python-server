@@ -22,6 +22,8 @@ import re
 import threading
 import time
 import thread
+import fileserver
+import merkletree
 
 
 # Definindo var. globais
@@ -126,13 +128,13 @@ def metodo_handler(metodo, caminho, corpo):
 
 def acha_objeto(caminho):
     """Procura o objeto no qual o caminho termina."""
-    nodo = root
+    nodo = fileserver.root
     if len(caminho) == 1 and caminho[0] == '':
-        return root
+        return fileserver.root
     elif caminho[0] != '':
-        for i in range(0, len(root.filhos), 1):
-            if caminho[0] == root.filhos[i].nome:
-                nodo = root.filhos[i]
+        for i in range(0, len(fileserver.root.filhos), 1):
+            if caminho[0] == fileserver.root.filhos[i].nome:
+                nodo = fileserver.root.filhos[i]
         for i in range(1, len(caminho), 1):
             for j in range(0, len(nodo.filhos), 1):
                 if caminho[i] == nodo.filhos[j].nome:
@@ -259,7 +261,7 @@ def Get_Handler(objeto):
 
 def Post_Handler(caminho, dados):
     """Manejamento do POST(cria)."""
-    nodo = root
+    nodo = fileserver.root
     # checa se o caminho 'e a propria raiz
     if len(caminho) == 1 and caminho[0] == '':
         message = msg_400BadRequest()
@@ -382,5 +384,4 @@ class Fileserver():
         """Devolve os dados guardados no arquivo."""
         return self.data
 
-root = Fileserver("/")
-#main()
+# root = Fileserver("/")
