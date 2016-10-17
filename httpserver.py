@@ -282,7 +282,7 @@ def Put_Handler(objeto, dados):
     if objeto is None:
         mensagem = msg403_Forbidden(put, objeto)
     else:
-        objeto.data = dados
+        objeto.insere_dados(dados)
         objeto.version += 1
         mensagem = msg200_OK(put, objeto)
     return mensagem
