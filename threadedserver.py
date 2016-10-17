@@ -28,21 +28,25 @@ class ThreadedServer(object):
         print "Conectado com o cliente %s" % str(address)
         metodo, caminhoSplitado, corpo, tamanho = httpserver.recebe_handler\
             (cliente)
-        mutex.acquire()
-        print str(fileserver.root.hash)
-        print str(fileserver.root.merkle_hash())
+        # mutex.acquire()
+        # print str(fileserver.root.hash)
         while True:
             if threadmerkle == fileserver.root.merkle_hash():
-                resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
-                    corpo)
                 break
             else:
                 threadmerkle = fileserver.root.merkle_hash()
+        resultado = httpserver.metodo_handler(metodo, caminhoSplitado,corpo)
         # try:
             # resultado = httpserver.metodo_handler(metodo, caminhoSplitado,\
                 # corpo)
         # finally:
             # mutex.release()
+        # objetofinal = httpserver
+        try:
+            print str(httpserver.acha_objeto(caminhoSplitado).hash)
+        except:
+            print "Arquivo nao foi criado"
+        print str(fileserver.root.merkle_hash()) + '\n'
         cliente.send(resultado)
         print resultado
         cliente.close()

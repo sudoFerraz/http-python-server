@@ -253,12 +253,12 @@ def Post_Handler(caminho, dados):
     if caminho[pos] == nodo.nome:
         msg = msg403_Forbidden(post, nodo)
         return msg
-    novonodo = Fileserver(caminho[pos])
+    novonodo = fileserver.arquivo(caminho[pos])
     nodo.insere(novonodo)
     ptnodo = novonodo
     # aloca os novos nodos dependendo de quantos vierem no request
     for k in range(pos+1, len(caminho), 1):
-        novonodo = Fileserver(caminho[k])
+        novonodo = fileserver.arquivo(caminho[k])
         # achar um meio de renomear os novos nodos para insercao
         ptnodo.insere(novonodo)
         ptnodo = novonodo
