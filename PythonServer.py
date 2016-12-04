@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -25,6 +26,9 @@ sys.path.append('gen-py')
 
 from tutorial import Calculator
 from tutorial.ttypes import *
+import routing
+import httpserver
+import fileserver
 
 from shared.ttypes import SharedStruct
 
@@ -36,20 +40,29 @@ import socket
 import threading
 import sys
 
+root = fileserver.arquivo("raiz")
+
 class CalculatorHandler:
   def __init__(self):
     self.log = {}
-    self.nodes = []
+    self.nodes = {}
+    self.tableindex = {}
+    self.arqindex = []
     self.host = 'localhost'
-    self.port = 5555
-    self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.sock.bind((self.host, self.port))
-    threading.Thread(target = self.discovery).start()
-    heartbeat = threading.enumerate()
-    heartbeat = heartbeat[1]
-    threading.Thread(target = self.threadcontroller).start()
-    print '\n' + str(threading.enumerate())
+    self.port = 0
+
+
+
+  def heartbeat(self, host, port):
+      #testar as outras portas para ver a que nao esta sendo usada
+      self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+      self.sock.bind((self.host, self.port))
+      # retornar uma lista com todos os nos vivos
+      #self.nodes = routing.getnodes(self.port)
+      # pegar uma tabela com os respectivos arquivos de cada nó
+      #self.tableindex = routing.updateindex(self.arqindex)
+      pass
 
   def threadcontroller(self):
       main = threading.enumerate()
@@ -100,9 +113,20 @@ class CalculatorHandler:
   def ping(self):
       print 'ping()'
 
+  def getr(self, arqkey):
+      for pos, arq in enumerate(self.arqindex):
+          if arq.hash == arqkey:
+              answer = arq.nome + arq.created + arq.modified + arq.version + arq.hash
+              return answer
+      pass
+
+
   def get(self, requested):
       print "teste2"
-      return requested
+      arqkey = routing.findkey(requested)
+      cliente = routing.routarq(arqkey)
+      answer = cliente.getr(requested)
+      return answer
 
   def list(self, requested):
       pass

@@ -9,6 +9,13 @@ class merkle(object):
     def __init__(self):
         pass
 
+    def findkey(self, arqname):
+        hasher = hashlib.sha256()
+        hasher.update(arqname)
+        key = hasher.hexdigest()
+        return key
+
+
     def acha_root(self, file_hashes):
         """Separa os hashes em 2 grupos, e concatena os grupos."""
         blocks = []
@@ -29,7 +36,7 @@ class merkle(object):
         while list_len % 2 != 0:
             blocks.extend(blocks[-1:])
             list_len = len(blocks)
-        
+
 
         secondary = []
         for k in [blocks[x:x+2] for x in xrange(0, len(blocks), 2)]:
@@ -51,7 +58,5 @@ class merkle(object):
         for k in xrange(0, hash_len):
             if file_hashes[k] == hash:
                 del file_hashes[k]
-    
+
         return file_hashes
-
-
