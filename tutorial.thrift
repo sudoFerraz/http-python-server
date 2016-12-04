@@ -133,13 +133,21 @@ service Calculator extends shared.SharedService {
 
    void ping(),
 
-   i32 add(1:i32 num1, 2:i32 num2),
+   string add(1:string requested, 2:string data, 3:string directory),
 
    string request(1:string requested),
 
    string get(1:string requested),
 
-   string list(1:string requested),
+   string list1(1:string requested),
+
+   string update(1:string requested, 2:string data),
+
+   string delete1(1:string requested),
+
+   string updatex(1:string requested, 2:i32 version, 3:string data),
+
+   string deletex(1:string requested, 2:i32 Version),
 
    i32 calculate(1:i32 logid, 2:Work w) throws (1:InvalidOperation ouch),
 

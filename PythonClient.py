@@ -32,12 +32,12 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 class Menu(object):
-    def __init__:
+    def __init__(self):
         pass
 
-    def user_menu(self, ):
+
+    def user_menu(self, client):
         print "[+] Escolha uma opcao [+]"
-        selected = input()
         print "[1]GET - Retorna dados e metadados do arquivo"
         print "[2]Lista - Retorna lista de filhos do arquivo"
         print "[3]Add - Adiciona arquivo"
@@ -45,12 +45,61 @@ class Menu(object):
         print "[5]Delete - Apaga arquivo"
         print "[6]Updatex - Atualiza arquivo se versao for a mesma"
         print "[7]Deletex - Apaga arquivo se versao for a mesma "
+        selected = input()
+
         if selected == 0:
             exit()
-        if selected ==1:
+        if selected == 1:
             print "Digite o nome do arquivo"
-            arq = input()
-
+            arq = raw_input()
+            answer = client.get(arq)
+            print answer
+        if selected == 2:
+            print "Digite o nome do arquivo"
+            arq = raw_input()
+            answer = client.list(arq)
+            print answer
+        if selected == 3:
+            print "Digite o nome do novo arquivo"
+            arq = raw_input()
+            print "Digite os dados do arquivo"
+            data = raw_input()
+            print "Digite o diretorio do arquivo"
+            directory = raw_input()
+            request = arq + data + directory
+            answer = client.add(request)
+            print answer
+        if selected == 4:
+            print "Digite o nome do arquivo que deseja atualizar"
+            arq = raw_input()
+            print "Digite os dados novos do arquivo"
+            data = raw_input()
+            request = arq + data
+            answer = client.update(request)
+            print answer
+        if selected == 5:
+            print "Digite o nome do arquivo que deseja deletar"
+            arq = raw_input()
+            answer = client.delete1(arq)
+            print answer
+        if selected == 6:
+            print "Digite o nome do arquivo que deseja atualizar"
+            arq = raw_input()
+            print "Digite a versao de target"
+            version = raw_input()
+            print "Digite os dados que deseja atualizar"
+            data = raw_input()
+            request = arq + version + data
+            answer = client.updatex(request)
+            print answer
+        if selected == 7:
+            print "Digite o nome do arquivo que deseja deletar"
+            raq = raw_input()
+            print "Digite a versao de target"
+            version = raw_input()
+            request = arq + version + data
+            answer = client.deletex(request)
+            print answer
 
 
 try:
@@ -104,14 +153,14 @@ try:
   option = input()
   """
   # Close!
-  requisicao = client.request("doido")
-
 
 except Thrift.TException, tx:
   print '%s' % (tx.message)
 
 
-  
+
 requisicao = client.request("doido")
 print requisicao
+menu = Menu()
+menu.user_menu(client)
 transport.close()

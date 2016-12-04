@@ -25,8 +25,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')
   print('Functions:')
   print('  void ping()')
-  print('  i32 add(i32 num1, i32 num2)')
+  print('  string add(string requested, string data, string directory)')
   print('  string request(string requested)')
+  print('  string get(string requested)')
+  print('  string list1(string requested)')
+  print('  string update(string requested, string data)')
+  print('  string delete1(string requested)')
+  print('  string updatex(string requested, i32 version, string data)')
+  print('  string deletex(string requested, i32 Version)')
   print('  i32 calculate(i32 logid, Work w)')
   print('  void zip()')
   print('  SharedStruct getStruct(i32 key)')
@@ -93,16 +99,52 @@ if cmd == 'ping':
   pp.pprint(client.ping())
 
 elif cmd == 'add':
-  if len(args) != 2:
-    print('add requires 2 args')
+  if len(args) != 3:
+    print('add requires 3 args')
     sys.exit(1)
-  pp.pprint(client.add(eval(args[0]),eval(args[1]),))
+  pp.pprint(client.add(args[0],args[1],args[2],))
 
 elif cmd == 'request':
   if len(args) != 1:
     print('request requires 1 args')
     sys.exit(1)
   pp.pprint(client.request(args[0],))
+
+elif cmd == 'get':
+  if len(args) != 1:
+    print('get requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get(args[0],))
+
+elif cmd == 'list1':
+  if len(args) != 1:
+    print('list1 requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.list1(args[0],))
+
+elif cmd == 'update':
+  if len(args) != 2:
+    print('update requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.update(args[0],args[1],))
+
+elif cmd == 'delete1':
+  if len(args) != 1:
+    print('delete1 requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.delete1(args[0],))
+
+elif cmd == 'updatex':
+  if len(args) != 3:
+    print('updatex requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.updatex(args[0],eval(args[1]),args[2],))
+
+elif cmd == 'deletex':
+  if len(args) != 2:
+    print('deletex requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.deletex(args[0],eval(args[1]),))
 
 elif cmd == 'calculate':
   if len(args) != 2:
