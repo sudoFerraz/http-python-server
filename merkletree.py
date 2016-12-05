@@ -10,9 +10,7 @@ class merkle(object):
         pass
 
     def findkey(self, arqname):
-        hasher = hashlib.sha256()
-        hasher.update(arqname)
-        key = hasher.hexdigest()
+        key = hash(arqname)
         return key
 
 

@@ -33,12 +33,17 @@ class Iface(shared.SharedService.Iface):
     """
     pass
 
-  def add(self, requested, data, directory):
+  def addarq(self, name):
+    """
+    Parameters:
+     - name
+    """
+    pass
+
+  def add(self, requested):
     """
     Parameters:
      - requested
-     - data
-     - directory
     """
     pass
 
@@ -150,22 +155,49 @@ class Client(shared.SharedService.Client, Iface):
     iprot.readMessageEnd()
     return
 
-  def add(self, requested, data, directory):
+  def addarq(self, name):
+    """
+    Parameters:
+     - name
+    """
+    self.send_addarq(name)
+    return self.recv_addarq()
+
+  def send_addarq(self, name):
+    self._oprot.writeMessageBegin('addarq', TMessageType.CALL, self._seqid)
+    args = addarq_args()
+    args.name = name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_addarq(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = addarq_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "addarq failed: unknown result")
+
+  def add(self, requested):
     """
     Parameters:
      - requested
-     - data
-     - directory
     """
-    self.send_add(requested, data, directory)
+    self.send_add(requested)
     return self.recv_add()
 
-  def send_add(self, requested, data, directory):
+  def send_add(self, requested):
     self._oprot.writeMessageBegin('add', TMessageType.CALL, self._seqid)
     args = add_args()
     args.requested = requested
-    args.data = data
-    args.directory = directory
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -464,6 +496,7 @@ class Processor(shared.SharedService.Processor, Iface, TProcessor):
   def __init__(self, handler):
     shared.SharedService.Processor.__init__(self, handler)
     self._processMap["ping"] = Processor.process_ping
+    self._processMap["addarq"] = Processor.process_addarq
     self._processMap["add"] = Processor.process_add
     self._processMap["request"] = Processor.process_request
     self._processMap["get"] = Processor.process_get
@@ -509,13 +542,32 @@ class Processor(shared.SharedService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_addarq(self, seqid, iprot, oprot):
+    args = addarq_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = addarq_result()
+    try:
+      result.success = self._handler.addarq(args.name)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("addarq", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
   def process_add(self, seqid, iprot, oprot):
     args = add_args()
     args.read(iprot)
     iprot.readMessageEnd()
     result = add_result()
     try:
-      result.success = self._handler.add(args.requested, args.data, args.directory)
+      result.success = self._handler.add(args.requested)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -790,25 +842,148 @@ class ping_result:
   def __ne__(self, other):
     return not (self == other)
 
+class addarq_args:
+  """
+  Attributes:
+   - name
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+  )
+
+  def __init__(self, name=None,):
+    self.name = name
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addarq_args')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.name)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class addarq_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('addarq_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class add_args:
   """
   Attributes:
    - requested
-   - data
-   - directory
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'requested', None, None, ), # 1
-    (2, TType.STRING, 'data', None, None, ), # 2
-    (3, TType.STRING, 'directory', None, None, ), # 3
   )
 
-  def __init__(self, requested=None, data=None, directory=None,):
+  def __init__(self, requested=None,):
     self.requested = requested
-    self.data = data
-    self.directory = directory
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -822,16 +997,6 @@ class add_args:
       if fid == 1:
         if ftype == TType.STRING:
           self.requested = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.data = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.directory = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -848,14 +1013,6 @@ class add_args:
       oprot.writeFieldBegin('requested', TType.STRING, 1)
       oprot.writeString(self.requested)
       oprot.writeFieldEnd()
-    if self.data is not None:
-      oprot.writeFieldBegin('data', TType.STRING, 2)
-      oprot.writeString(self.data)
-      oprot.writeFieldEnd()
-    if self.directory is not None:
-      oprot.writeFieldBegin('directory', TType.STRING, 3)
-      oprot.writeString(self.directory)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -866,8 +1023,6 @@ class add_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.requested)
-    value = (value * 31) ^ hash(self.data)
-    value = (value * 31) ^ hash(self.directory)
     return value
 
   def __repr__(self):

@@ -52,6 +52,8 @@ class Menu(object):
         if selected == 1:
             print "Digite o nome do arquivo"
             arq = raw_input()
+            client.addarq("/doido/loco")
+            print arq
             answer = client.get(arq)
             print answer
         if selected == 2:

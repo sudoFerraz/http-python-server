@@ -121,34 +121,9 @@ def acha_objeto(caminho):
 
 def Parsing(message):
     """Faz parsing e separa uma lista para o metodo e caminhos splitados."""
-    linhas = message.split("\n")
-    content = 'Content-Length:'
-    if content in message:
-        tamanho = message.split("Content-Length: ")
-        tamanho = tamanho[1].split("\n")
-        tamanho = tamanho[0]
-    else:
-        tamanho = None
-    # print tamanho
-    linhas2 = linhas[0].split(" HTTP")
-    linhas3 = linhas2[0].split(" /")
-    caminho = linhas3[1].split("/")
-    metodo = linhas3[0]
-    data = message.split("\r\n\r\n")
-    if len(data) == 1:
-        data = message.split("\n\n")
-        if len(data) == 1:
-            data = ''
-        elif len(data) != 1:
-            data = data[1:]
-    else:
-        data = data[1:]
-    data = ''.join(data)
-    # print data
-    if tamanho is not None:
-        if len(data) > int(tamanho):
-            data = (data[:int(tamanho)])
-    return metodo, caminho, data, tamanho
+    caminhos = message.split("/")
+    del caminhos[0]
+    return caminhos
 
 
 def traduz(mensagem):
@@ -295,7 +270,3 @@ def Header_Handler(objeto):
     else:
         mensagem = msg200_OK(header, objeto)
     return mensagem
-
-
-
-

@@ -1,6 +1,7 @@
 import time
 import uuid
 import merkletree
+import httpserver
 
 __metaclass__ = type
 
@@ -13,13 +14,14 @@ class arquivo():
 
     def __init__(self,nome):
         global file_hashes
-        self.nome = nome
+        self.nome = httpserver.Parsing(nome)
+        self.nome = self.nome[-1]
         self.filhos = []
         self.data = None
         self.created = int(time.time())
         self.modified = int(time.time())
         self.version = 0
-        self.hash = str(uuid.uuid4().hex)
+        self.hash = hash(nome)
         self.pai = None
         file_hashes.append(self.hash)
 
@@ -49,7 +51,7 @@ class arquivo():
     def merkle_hash(self):
         global file_hashes
         roothash = merkle.acha_root(file_hashes)
-        
+
         return roothash
 
-root = arquivo("/")
+#root = arquivo("/")

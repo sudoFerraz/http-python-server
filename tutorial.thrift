@@ -133,6 +133,8 @@ service Calculator extends shared.SharedService {
 
    void ping(),
 
+   string addarq(1:string name),
+
    string add(1:string requested),
 
    string request(1:string requested),

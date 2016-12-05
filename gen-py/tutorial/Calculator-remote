@@ -25,7 +25,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')
   print('Functions:')
   print('  void ping()')
-  print('  string add(string requested, string data, string directory)')
+  print('  string addarq(string name)')
+  print('  string add(string requested)')
   print('  string request(string requested)')
   print('  string get(string requested)')
   print('  string list1(string requested)')
@@ -98,11 +99,17 @@ if cmd == 'ping':
     sys.exit(1)
   pp.pprint(client.ping())
 
-elif cmd == 'add':
-  if len(args) != 3:
-    print('add requires 3 args')
+elif cmd == 'addarq':
+  if len(args) != 1:
+    print('addarq requires 1 args')
     sys.exit(1)
-  pp.pprint(client.add(args[0],args[1],args[2],))
+  pp.pprint(client.addarq(args[0],))
+
+elif cmd == 'add':
+  if len(args) != 1:
+    print('add requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add(args[0],))
 
 elif cmd == 'request':
   if len(args) != 1:

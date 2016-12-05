@@ -41,7 +41,6 @@ import threading
 import sys
 import merkletree
 
-root = fileserver.arquivo("raiz")
 
 class CalculatorHandler:
   def __init__(self):
@@ -62,8 +61,20 @@ class CalculatorHandler:
               return True
       return False
 
+  def addhandler(self, parsedmessage):
+      """Cria os diretorios parents do arquivo."""
+      pass
 
 
+
+  def addarq(self, name):
+      newarq = fileserver.arquivo(name)
+      self.arqindex.append(newarq)
+      print self.arqindex[0].hash
+      arqkey = newarq.hash
+      self.keyindex.append(arqkey)
+      self.tableindex[9090] = self.keyindex
+      return "doido"
 
   def heartbeat(self, host, port):
       #testar as outras portas para ver a que nao esta sendo usada
@@ -127,20 +138,41 @@ class CalculatorHandler:
       print 'ping()'
 
   def getr(self, arqkey):
-      for pos, arq in enumerate(self.arqindex):
-          if arq.hash == arqkey:
-              answer = arq.nome + arq.created + arq.modified + arq.version + arq.hash
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              answer = "\nNome:" + str(pos.nome) + "\nCreated:" + \
+              str(pos.created) + "\nModified:" + str(pos.modified) + "\nVersion:"\
+              + str(pos.version) + "\nHash:" + str(pos.hash)
               return answer
+      return "deu ruim"
+#Nao esquecer de declarar as funcoes no tutorial.thrift
 
-
+  def checkparent(self, directory):
+      """Verifica até qual nível de raiz está presente e retorna um indice."""
+      dirlist = httpserver.Parsing(directory)
+      level = 0
+      parentkey = "/" + routing.findkey(dirlist[0])
+      for i in range(0, len(dirlist), 1):
+          if not level < i:
+              parentkey = parentkey + "/" + routing.findkey(dirlist[i])
+          if self.check_arq_present(parentkey):
+              level = level + 1
+      return level
 
   def get(self, requested):
       print "teste2"
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(9090, arqkey)
-      answer = cliente.getr(arqkey)
-      transporte.close()
-      return answer
+      if self.check_arq_present(arqkey):
+          answer = self.getr(arqkey)
+          return answer
+      else:
+          cliente, transporte = routing.findarq(9090, arqkey, self.tableindex)
+          if cliente == 1:
+              return 'Arquivo nao esta presente no servidor'
+          else:
+              answer = cliente.getr(arqkey)
+              transporte.close()
+              return answer
 
   def listr(self, arqkey):
       pass
