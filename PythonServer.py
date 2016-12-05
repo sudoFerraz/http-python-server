@@ -39,6 +39,7 @@ from thrift.server import TServer
 import socket
 import threading
 import sys
+import merkletree
 
 root = fileserver.arquivo("raiz")
 
@@ -48,8 +49,19 @@ class CalculatorHandler:
     self.nodes = {}
     self.tableindex = {}
     self.arqindex = []
+    self.keyindex = []
     self.host = 'localhost'
     self.port = 0
+    self.tableindex = routing.getnodes(9090)
+
+  def check_arq_present(self, arqkey):
+      """Checa se um arquivo esta presente neste nodo."""
+      for i in range(0, len(self.keyindex), 1):
+          key = self.keyindex[i]
+          if arqkey == key:
+              return True
+      return False
+
 
 
 
@@ -94,7 +106,8 @@ class CalculatorHandler:
               pass
 
 
-
+  def return_key_index(self):
+      return self.keyindex
 
 
   def discovery(self):
@@ -118,34 +131,71 @@ class CalculatorHandler:
           if arq.hash == arqkey:
               answer = arq.nome + arq.created + arq.modified + arq.version + arq.hash
               return answer
-      pass
+
 
 
   def get(self, requested):
       print "teste2"
       arqkey = routing.findkey(requested)
-      cliente = routing.routarq(arqkey)
-      answer = cliente.getr(requested)
+      cliente, transporte = routing.findarq(9090, arqkey)
+      answer = cliente.getr(arqkey)
+      transporte.close()
       return answer
 
+  def listr(self, arqkey):
+      pass
+
   def list(self, requested):
+      print "teste3"
+      arqkey = routing.findkey(requested)
+      cliente, transporte = routing.findarq(9090, arqkey)
+      answer = cliente.listr(arqkey)
+      transporte.close()
+      return answer
+
+  def updater(self, arqkey):
       pass
 
   def update(self, requested):
-      pass
+      arqkey = routing.findkey(requested)
+      cliente, transporte = routing.findarq(arqkey)
+      answer = cliente.updater(arqkey)
+      transporte.close()
+      return answer
 
   def delete(self, requested):
+      arqkey = routing.findkey(requested)
+      cliente, transporte = routing.findarq(arqkey)
+      answer = cliente.deleter(arqkey)
+      transporte.close()
+      return answer
+
+  def updatexr(self, arqkey):
       pass
 
   def updatex(self, requested):
+      arqkey = routing.findkey(requested)
+      cliente, transporte = routing.findarq(arqkey)
+      answer = cliente.updatexr(arqkey)
+      transporte.close()
+      return answer
+
+  def deletexr(self, arqkey):
       pass
 
   def deletex(self, requested):
-      pass
+      arqkey = routing.findkey(requested)
+      cliente, transporte = routing.findarq(arqkey)
+      answer = cliente.deletexr(arqkey)
+      transporte.close()
+      return answer
 
-  def add(self, n1, n2):
-    print 'add(%d,%d)' % (n1, n2)
-    return n1+n2
+# FAZER O ADD DIREITO.
+
+  def add(self, requested):
+      arqkey = routing.findkey(requested)
+      answer = cliente.addr(arqkey)
+      return True
 
   def calculate(self, logid, work):
     print 'calculate(%d, %r)' % (logid, work)
