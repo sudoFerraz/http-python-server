@@ -133,11 +133,15 @@ service Calculator extends shared.SharedService {
 
    void ping(),
 
-   string return_key_index()
+   list<i64> return_key_index(1:string foo),
 
-   string checkparent(1:string directory),
+   string getr(1:i64 arqkey),
 
-   string addarq(1:string name),
+   bool check_arq_present(1:i64 arqkey),
+
+   i32 checkparent(1:string directory),
+
+   void addarq(1:string name),
 
    string add(1:string arqname, 2:string arqdir, 3:string arqdata),
 
@@ -149,7 +153,7 @@ service Calculator extends shared.SharedService {
 
    string update(1:string requested, 2:string data),
 
-   string delete1(1:string requested),
+   string delete(1:string requested),
 
    string updatex(1:string requested, 2:i32 version, 3:string data),
 

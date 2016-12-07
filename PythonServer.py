@@ -53,7 +53,12 @@ class CalculatorHandler:
     self.port = portr
     self.tableindex = {}
     self.tableindex[self.port] = self.arqindex
+    #routing.teste(5556)
     self.tableindex.update(routing.getnodes(self.port))
+
+  def update_table(self):
+      print "atualizando a tabela"
+      self.tableindex.update(routing.getnodes(portr))
 
   def check_arq_present(self, arqkey):
       """Checa se um arquivo esta presente neste nodo."""
@@ -66,8 +71,8 @@ class CalculatorHandler:
   def addhandler(self, parentslist, level):
       """Cria os diretorios parents do arquivo."""
       for i in range(level+1, len(parentslist), 1):
+          print "printando no addhandler"
           self.addson(parentslist[i], routing.findkey(parentslist[i-1]))
-      return True
 
 
 
@@ -90,7 +95,8 @@ class CalculatorHandler:
       arqkey = newarq.hash
       self.keyindex.append(arqkey)
       self.tableindex[portr] = self.keyindex
-      return True
+      print "Printando no add arq, lista de chaves:"
+      print self.keyindex
 
   def heartbeat(self, host, port):
       #testar as outras portas para ver a que nao esta sendo usada
@@ -133,7 +139,8 @@ class CalculatorHandler:
               pass
 
 
-  def return_key_index(self):
+  def return_key_index(self, foo):
+      doido = foo
       return self.keyindex
 
 
@@ -151,16 +158,11 @@ class CalculatorHandler:
       return doido
 
   def ping(self):
+      #self.update_table()
+      #print hostport
       print 'ping()'
 
-  def getr(self, arqkey):
-      for pos in self.arqindex:
-          if pos.hash == arqkey:
-              answer = "\nNome:" + str(pos.nome) + "\nCreated:" + \
-              str(pos.created) + "\nModified:" + str(pos.modified) + "\nVersion:"\
-              + str(pos.version) + "\nHash:" + str(pos.hash)
-              return answer
-      return "deu ruim"
+
 #Nao esquecer de declarar as funcoes no tutorial.thrift
 
   def checkparent(self, directory):
@@ -169,12 +171,15 @@ class CalculatorHandler:
       level = 0
       parentname = "/" + dirlist[0]
       parentkey = routing.findkey(parentname)
+      print "checkparent"
       for i in range(0, len(dirlist), 1):
           if not level < i:
               parentname = parentname + "/" + dirlist[i]
               parentkey = routing.findkey(parentname)
           if self.check_arq_present(parentkey):
               level = level + 1
+      print "printando level"
+      print level
       return level
 
   def get(self, requested):
@@ -184,63 +189,148 @@ class CalculatorHandler:
           answer = self.getr(arqkey)
           return answer
       else:
-          cliente, transporte = routing.findarq(9090, arqkey, self.tableindex)
-          if cliente == 1:
-              return 'Arquivo nao esta presente no servidor'
-          else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          print "Printando as tabelas:"
+          print self.tableindex
+          #print cliente.tableindex
+          check = cliente.check_arq_present(arqkey)
+          if cliente.check_arq_present(arqkey):
               answer = cliente.getr(arqkey)
               transporte.close()
               return answer
+          else:
+              transporte.close()
+              return 'Arquivo nao esta presente no servidor'
+
+  def getr(self, arqkey):
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              answer = "\nNome:" + str(pos.nome) + "\nCreated:" + \
+              str(pos.created) + "\nModified:" + str(pos.modified) + "\nVersion:"\
+              + str(pos.version) + "\nHash:" + str(pos.hash)
+              return answer
+      return "deu ruim"
 
   def listr(self, arqkey):
-      pass
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              filhos = pos.filhos
+
+              for filho in filhos:
+                  nomesfilhos = answer.append(filho.nome)
+              answer = ''.join(nomesfilhos)
+      return answer
 
   def list(self, requested):
       print "teste3"
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(9090, arqkey)
-      answer = cliente.listr(arqkey)
-      transporte.close()
+      if self.check_arq_present(arqkey):
+          answer = self.listr(arqkey)
+          return answer
+      else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          answer = cliente.listr(arqkey)
+          transporte.close()
+          return answer
+
+  def updater(self, arqkey, arqdata):
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              pos.data = arqdata
+              answer = 'Atualizado com sucesso'
       return answer
 
-  def updater(self, arqkey):
-      pass
-
-  def update(self, requested):
+  def update(self, requested, arqdata):
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(arqkey)
-      answer = cliente.updater(arqkey)
-      transporte.close()
+      if self.check_arq_present(arqkey):
+          answer = self.updater(arqkey, arqdata)
+          return answer
+      else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          answer = cliente.updater(arqkey, arqdata)
+          transporte.close()
+          return answer
+
+  def deleter(self, arqkey):
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              pos.remove_arq()
+              answer = 'Apagado com sucesso'
       return answer
 
   def delete(self, requested):
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(arqkey)
-      answer = cliente.deleter(arqkey)
-      transporte.close()
+      if self.check_arq_present(arqkey):
+          answer = self.deleter(arqkey)
+          return answer
+      else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          answer = cliente.deleter(arqkey)
+          transporte.close()
+          return answer
+
+  def updatexr(self, arqkey, arqdata, arqversion):
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              if pos.version == arqversion:
+                  pos.insere_dados(arqdata)
+                  answer = 'Atualizado com sucesso'
+              else:
+                  answer = 'Nao Atualizado'
       return answer
 
-  def updatexr(self, arqkey):
-      pass
-
-  def updatex(self, requested):
+  def updatex(self, requested, arqdata, arqkeyversion):
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(arqkey)
-      answer = cliente.updatexr(arqkey)
-      transporte.close()
+      if self.check_arq_present(arqkey):
+          answer = self.updatexr(arqkey, arqdata, arqversion)
+          return answer
+      else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          answer = cliente.updatexr(arqkey, arqdata, arqversion)
+          transporte.close()
+          return answer
+
+  def deletexr(self, arqkey, arqversion):
+      for pos in self.arqindex:
+          if pos.hash == arqkey:
+              if pos.version == arqversion:
+                  pos.remove_arq()
+                  answer = 'Removido com sucesso'
+              else:
+                  answer = 'Arquivo nao Removido'
       return answer
 
-  def deletexr(self, arqkey):
-      pass
-
-  def deletex(self, requested):
+  def deletex(self, requested, arqversion):
       arqkey = routing.findkey(requested)
-      cliente, transporte = routing.findarq(arqkey)
-      answer = cliente.deletexr(arqkey)
-      transporte.close()
-      return answer
+      if self.check_arq_present(arqkey):
+          answer = self.deletexr(arqkey, arqversion)
+          return answer
+      else:
+          rightnode = routing.distribute_arq(requested, self.tableindex)
+          print "Achando nodo certo:"
+          print rightnode
+          cliente, transporte = self.novaconexao(rightnode)
+          answer = cliente.deletexr(arqkey, arqversion)
+          transporte.close()
+          return answer
 
   def novaconexao(self, port):
+      port = 5556
       """Cria uma nova conexao e devolve um cliente e um transporte."""
       try:
           transport = TSocket.TSocket('localhost', port)
@@ -254,35 +344,57 @@ class CalculatorHandler:
 
 # FAZER O ADD DIREITO.
 
+
+  def announcement(self):
+      """Anuncia que houve uma alteração e necessita uma att."""
+      pass
+
   def add(self, arqname, arqdir, arqdata):
       rightnode = routing.distribute_arq(arqdir, self.tableindex)
+      print "PRINTANDO NODO CERTO"
+      print rightnode
       if rightnode == portr:
           level = self.checkparent(arqdir)
           #Se nao tiver nenhum pai já adiciona pelo método
           if level == 0:
               check = self.addarq(arqdir)
               if check == True:
+                  self.announcement()
+                  print self.keyindex
+                  #self.update_table()
                   return 'Adicionado com sucesso'
           dirlist = httpserver.Parsing(arqdir)
           check = self.addhandler(dirlist, level)
           if check == True:
+              self.announcement()
+              print self.keyindex
+              #self.update_table()
               return 'Adicionado com sucesso'
 
       else:
           cliente, transporte = self.novaconexao(rightnode)
           level = cliente.checkparent(arqdir)
+          print "recebeu"
+          print level
           if level == 0:
-              check = cliente.addarq(arqdir)
-              if check == True:
-                  transporte.close()
-                  return 'Adicionado com sucesso'
-          dirlist = httpserver.Parsing(arqdir)
-          check = cliente.addhandler(dirlist, level)
-          if check == True:
+              print "addarq"
+              cliente.addarq(arqdir)
+              #self.tableindex.update(routing.getnodes(portr))
               transporte.close()
+              print self.keyindex
+              #self.update_table()
               return 'Adicionado com sucesso'
+          print "level > 0"
+          dirlist = httpserver.Parsing(arqdir)
+          print "addhandler"
+          cliente.addhandler(dirlist, level)
+          transporte.close()
+          self.tableindex.update(routing.getnodes(portr))
+          print self.keyindex
+          #self.update_table()
+          return 'Adicionado com sucesso'
 
-      return 'Arquivo não adicionado'
+      return 'Arquivo adicionado com sucesso'
 
   def calculate(self, logid, work):
     print 'calculate(%d, %r)' % (logid, work)

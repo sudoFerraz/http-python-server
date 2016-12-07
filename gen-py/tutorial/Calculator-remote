@@ -25,9 +25,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')
   print('Functions:')
   print('  void ping()')
-  print('  string return_key_index()')
-  print('  string checkparent(string directory)')
-  print('  string addarq(string name)')
+  print('   return_key_index(string foo)')
+  print('  string getr(i64 arqkey)')
+  print('  bool check_arq_present(i64 arqkey)')
+  print('  i32 checkparent(string directory)')
+  print('  void addarq(string name)')
   print('  string add(string arqname, string arqdir, string arqdata)')
   print('  string request(string requested)')
   print('  string get(string requested)')
@@ -102,10 +104,22 @@ if cmd == 'ping':
   pp.pprint(client.ping())
 
 elif cmd == 'return_key_index':
-  if len(args) != 0:
-    print('return_key_index requires 0 args')
+  if len(args) != 1:
+    print('return_key_index requires 1 args')
     sys.exit(1)
-  pp.pprint(client.return_key_index())
+  pp.pprint(client.return_key_index(args[0],))
+
+elif cmd == 'getr':
+  if len(args) != 1:
+    print('getr requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getr(eval(args[0]),))
+
+elif cmd == 'check_arq_present':
+  if len(args) != 1:
+    print('check_arq_present requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.check_arq_present(eval(args[0]),))
 
 elif cmd == 'checkparent':
   if len(args) != 1:

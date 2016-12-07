@@ -20,12 +20,25 @@ from thrift.protocol import TBinaryProtocol
 #print '\n' + str(threading.enumerate())
 
 
+def teste(porta):
+    """Metodo de testes para conectar um nodo a outro."""
+    transport = TSocket.TSocket('localhost', porta)
+    transport = TTransport.TBufferedTransport(transport)
+    protocol = TBinaryProtocol.TBinaryProtocol(transport)
+    client = Calculator.Client(protocol)
+    transport.open()
+    client.ping()
+    found = client.return_key_index("teste")
+    print found
+    transport.close()
+
 def getnodes(myport):
     """Retorna um dicionario com os nos vivos e seus keyindex."""
-    print "Digite o range de portas que voce gostaria de checar:"
-    port_range = input()
+    print "tentando getnodes"
+    print "Digite o tanto ai fdp"
+    otanto = input()
     found = {}
-    for i in range(5555, 5555+port_range, 1):
+    for i in range(5555, 5555+otanto, 1):
         if i is not myport:
             try:
                 transport = TSocket.TSocket('localhost', i)
@@ -33,12 +46,13 @@ def getnodes(myport):
                 protocol = TBinaryProtocol.TBinaryProtocol(transport)
                 client = Calculator.Client(protocol)
                 transport.open()
-                foundkeyindex = client.return_key_index()
+                foundkeyindex = client.return_key_index("foo")
                 found[i] = foundkeyindex
                 client.ping()
                 transport.close()
             except Thrift.TException, tx:
                 pass
+    print "passou getnodes"
     return found
 
 def distribute_arq(arqdir, tableindex):
@@ -60,14 +74,15 @@ def distribute_arq(arqdir, tableindex):
         for key in keylist:
             if key == roothash:
                 rightnodeport = port
+                print port
                 return rightnodeport
     mod = arqkey % nodenr
     rightnodeport = portlist[mod]
     return rightnodeport
 
 
-#fazer a distribuição de arquivos direito
-
+#fazer a distribuicao de arquivos direito
+#fazer os testes corretos para os servidores em nodos diferentes
 
     pass
 

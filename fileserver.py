@@ -15,7 +15,7 @@ class arquivo():
     def __init__(self,nome):
         global file_hashes
         self.nome = httpserver.Parsing(nome)
-        self.nome = self.nome[-1]
+        self.nome = self.nome[:-1]
         self.filhos = []
         self.data = None
         self.created = int(time.time())

@@ -50,7 +50,7 @@ class Menu(object):
         if selected == 0:
             exit()
         if selected == 1:
-            print "Digite o nome do arquivo"
+            print "Digite o caminho do arquivo"
             arq = raw_input()
             print arq
             answer = client.get(arq)
@@ -122,7 +122,7 @@ try:
   # Connect!
   transport.open()
 
-  client.ping()
+  #client.ping()
   print 'ping()'
   # Close!
 
