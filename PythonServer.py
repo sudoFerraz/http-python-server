@@ -50,8 +50,10 @@ class CalculatorHandler:
     self.arqindex = []
     self.keyindex = []
     self.host = 'localhost'
-    self.port = 0
-    self.tableindex = routing.getnodes(9090)
+    self.port = portr
+    self.tableindex = {}
+    self.tableindex[self.port] = self.arqindex
+    self.tableindex.update(routing.getnodes(self.port))
 
   def check_arq_present(self, arqkey):
       """Checa se um arquivo esta presente neste nodo."""
@@ -61,20 +63,34 @@ class CalculatorHandler:
               return True
       return False
 
-  def addhandler(self, parsedmessage):
+  def addhandler(self, parentslist, level):
       """Cria os diretorios parents do arquivo."""
-      pass
+      for i in range(level+1, len(parentslist), 1):
+          self.addson(parentslist[i], routing.findkey(parentslist[i-1]))
+      return True
 
 
 
-  def addarq(self, name):
+  def addson(self, name, parentkey):
+      #Cria o novo arquivo
       newarq = fileserver.arquivo(name)
+      #Faz o hash do nome de cada arquivo e compara com o hash do nome do pai
+      for arq in self.arqindex:
+          if routing.findkey(arq.nome) == parentkey:
+              arq.insere(newarq)
       self.arqindex.append(newarq)
-      print self.arqindex[0].hash
+      self.keyindex.append(newarq.hash)
+      self.tableindex[portr] = self.keyindex
+
+
+  def addarq(self, path):
+      newarq = fileserver.arquivo(path)
+      self.arqindex.append(newarq)
+      #pegando o hash do caminho inteiro
       arqkey = newarq.hash
       self.keyindex.append(arqkey)
-      self.tableindex[9090] = self.keyindex
-      return "doido"
+      self.tableindex[portr] = self.keyindex
+      return True
 
   def heartbeat(self, host, port):
       #testar as outras portas para ver a que nao esta sendo usada
@@ -151,10 +167,12 @@ class CalculatorHandler:
       """Verifica até qual nível de raiz está presente e retorna um indice."""
       dirlist = httpserver.Parsing(directory)
       level = 0
-      parentkey = "/" + routing.findkey(dirlist[0])
+      parentname = "/" + dirlist[0]
+      parentkey = routing.findkey(parentname)
       for i in range(0, len(dirlist), 1):
           if not level < i:
-              parentkey = parentkey + "/" + routing.findkey(dirlist[i])
+              parentname = parentname + "/" + dirlist[i]
+              parentkey = routing.findkey(parentname)
           if self.check_arq_present(parentkey):
               level = level + 1
       return level
@@ -222,12 +240,49 @@ class CalculatorHandler:
       transporte.close()
       return answer
 
+  def novaconexao(self, port):
+      """Cria uma nova conexao e devolve um cliente e um transporte."""
+      try:
+          transport = TSocket.TSocket('localhost', port)
+          transport = TTransport.TBufferedTransport(transport)
+          protocol = TBinaryProtocol.TBinaryProtocol(transport)
+          client = Calculator.Client(protocol)
+          transport.open()
+      except Thrift.TException, tx:
+          print '%s' % (tx.message)
+      return client, transport
+
 # FAZER O ADD DIREITO.
 
-  def add(self, requested):
-      arqkey = routing.findkey(requested)
-      answer = cliente.addr(arqkey)
-      return True
+  def add(self, arqname, arqdir, arqdata):
+      rightnode = routing.distribute_arq(arqdir, self.tableindex)
+      if rightnode == portr:
+          level = self.checkparent(arqdir)
+          #Se nao tiver nenhum pai já adiciona pelo método
+          if level == 0:
+              check = self.addarq(arqdir)
+              if check == True:
+                  return 'Adicionado com sucesso'
+          dirlist = httpserver.Parsing(arqdir)
+          check = self.addhandler(dirlist, level)
+          if check == True:
+              return 'Adicionado com sucesso'
+
+      else:
+          cliente, transporte = self.novaconexao(rightnode)
+          level = cliente.checkparent(arqdir)
+          if level == 0:
+              check = cliente.addarq(arqdir)
+              if check == True:
+                  transporte.close()
+                  return 'Adicionado com sucesso'
+          dirlist = httpserver.Parsing(arqdir)
+          check = cliente.addhandler(dirlist, level)
+          if check == True:
+              transporte.close()
+              return 'Adicionado com sucesso'
+
+      return 'Arquivo não adicionado'
 
   def calculate(self, logid, work):
     print 'calculate(%d, %r)' % (logid, work)
@@ -264,10 +319,11 @@ class CalculatorHandler:
 
   def zip(self):
     print 'zip()'
-
+global portr
+portr = sys.argv[1]
 handler = CalculatorHandler()
 processor = Calculator.Processor(handler)
-transport = TSocket.TServerSocket(port=9090)
+transport = TSocket.TServerSocket(port=portr)
 tfactory = TTransport.TBufferedTransportFactory()
 pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
@@ -277,6 +333,6 @@ server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
 #server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 #server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 
-print 'Starting the server...'
+print 'Starting the server on port ' + portr + " ..."
 server.serve()
 print 'done.'

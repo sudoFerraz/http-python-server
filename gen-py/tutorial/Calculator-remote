@@ -25,8 +25,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')
   print('Functions:')
   print('  void ping()')
+  print('  string return_key_index()')
+  print('  string checkparent(string directory)')
   print('  string addarq(string name)')
-  print('  string add(string requested)')
+  print('  string add(string arqname, string arqdir, string arqdata)')
   print('  string request(string requested)')
   print('  string get(string requested)')
   print('  string list1(string requested)')
@@ -99,6 +101,18 @@ if cmd == 'ping':
     sys.exit(1)
   pp.pprint(client.ping())
 
+elif cmd == 'return_key_index':
+  if len(args) != 0:
+    print('return_key_index requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.return_key_index())
+
+elif cmd == 'checkparent':
+  if len(args) != 1:
+    print('checkparent requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.checkparent(args[0],))
+
 elif cmd == 'addarq':
   if len(args) != 1:
     print('addarq requires 1 args')
@@ -106,10 +120,10 @@ elif cmd == 'addarq':
   pp.pprint(client.addarq(args[0],))
 
 elif cmd == 'add':
-  if len(args) != 1:
-    print('add requires 1 args')
+  if len(args) != 3:
+    print('add requires 3 args')
     sys.exit(1)
-  pp.pprint(client.add(args[0],))
+  pp.pprint(client.add(args[0],args[1],args[2],))
 
 elif cmd == 'request':
   if len(args) != 1:

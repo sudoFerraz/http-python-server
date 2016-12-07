@@ -133,9 +133,13 @@ service Calculator extends shared.SharedService {
 
    void ping(),
 
+   string return_key_index()
+
+   string checkparent(1:string directory),
+
    string addarq(1:string name),
 
-   string add(1:string requested),
+   string add(1:string arqname, 2:string arqdir, 3:string arqdata),
 
    string request(1:string requested),
 

@@ -52,10 +52,10 @@ class Menu(object):
         if selected == 1:
             print "Digite o nome do arquivo"
             arq = raw_input()
-            client.addarq("/doido/loco")
             print arq
             answer = client.get(arq)
             print answer
+            print
         if selected == 2:
             print "Digite o nome do arquivo"
             arq = raw_input()
@@ -69,7 +69,7 @@ class Menu(object):
             print "Digite o diretorio do arquivo"
             directory = raw_input()
             request = arq + data + directory
-            answer = client.add(request)
+            answer = client.add(arq, directory, data)
             print answer
         if selected == 4:
             print "Digite o nome do arquivo que deseja atualizar"
@@ -103,11 +103,12 @@ class Menu(object):
             answer = client.deletex(request)
             print answer
 
-
+global portr
+portr = sys.argv[1]
 try:
 
   # Make socket
-  transport = TSocket.TSocket('localhost', 9090)
+  transport = TSocket.TSocket('localhost', portr)
 
   # Buffering is critical. Raw sockets are very slow
   transport = TTransport.TBufferedTransport(transport)
@@ -123,37 +124,6 @@ try:
 
   client.ping()
   print 'ping()'
-  """
-  sum = client.add(1,1)
-  print '1+1=%d' % (sum)
-
-  work = Work()
-
-  work.op = Operation.DIVIDE
-  work.num1 = 1
-  work.num2 = 0
-
-
-
-  try:
-    quotient = client.calculate(1, work)
-    print 'Whoa? You know how to divide by zero?'
-  except InvalidOperation, io:
-    print 'InvalidOperation: %r' % io
-
-  work.op = Operation.SUBTRACT
-  work.num1 = 15
-  work.num2 = 10
-
-  diff = client.calculate(1, work)
-  print '15-10=%d' % (diff)
-
-  log = client.getStruct(1)
-  print 'Check log: %s' % (log.value)
-
-  print "[+] Escolha uma opcao abaixo [+]"
-  option = input()
-  """
   # Close!
 
 except Thrift.TException, tx:

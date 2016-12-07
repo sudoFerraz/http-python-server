@@ -25,10 +25,10 @@ def getnodes(myport):
     print "Digite o range de portas que voce gostaria de checar:"
     port_range = input()
     found = {}
-    for i in range(5050, 5050+port_range, 1):
+    for i in range(5555, 5555+port_range, 1):
         if i is not myport:
             try:
-                transport = TSocket.TSocket('localhost, i')
+                transport = TSocket.TSocket('localhost', i)
                 transport = TTransport.TBufferedTransport(transport)
                 protocol = TBinaryProtocol.TBinaryProtocol(transport)
                 client = Calculator.Client(protocol)
@@ -45,11 +45,12 @@ def distribute_arq(arqdir, tableindex):
     """Procura o nodo certo para armazenar este arquivo e devolve sua porta."""
     nodenr = len(tableindex)
     rightnode = 0
-    arqhash = httpserver.Parsing(arqdir)
-    arqhash = arqhash[0]
-    #Definindo o hash sendo o primeiro diretorio para colocar os filhos no msm nó
-    arqhash = hash(arqhash)
-    #arqkey é o hash certo do arquivo, com o caminho inteiro
+    root = httpserver.Parsing(arqdir)
+    #Pegando o primeiro caminho para achar sua chave
+    root = root[0]
+    #Definindo o hash sendo o primeiro diretorio para colocar os filhos no msm no
+    roothash = hash(root)
+    #hash do caminho inteiro (hash do arquivo especifico)
     arqkey = hash(arqdir)
     portlist = []
     portcounter = 0
@@ -57,7 +58,7 @@ def distribute_arq(arqdir, tableindex):
         portlist.append(port)
         portcounter = portcounter + 1
         for key in keylist:
-            if key == arqhash:
+            if key == roothash:
                 rightnodeport = port
                 return rightnodeport
     mod = arqkey % nodenr
@@ -65,7 +66,7 @@ def distribute_arq(arqdir, tableindex):
     return rightnodeport
 
 
-
+#fazer a distribuição de arquivos direito
 
 
     pass

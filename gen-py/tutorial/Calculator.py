@@ -33,6 +33,16 @@ class Iface(shared.SharedService.Iface):
     """
     pass
 
+  def return_key_index(self):
+    pass
+
+  def checkparent(self, directory):
+    """
+    Parameters:
+     - directory
+    """
+    pass
+
   def addarq(self, name):
     """
     Parameters:
@@ -40,10 +50,12 @@ class Iface(shared.SharedService.Iface):
     """
     pass
 
-  def add(self, requested):
+  def add(self, arqname, arqdir, arqdata):
     """
     Parameters:
-     - requested
+     - arqname
+     - arqdir
+     - arqdata
     """
     pass
 
@@ -155,6 +167,63 @@ class Client(shared.SharedService.Client, Iface):
     iprot.readMessageEnd()
     return
 
+  def return_key_index(self):
+    self.send_return_key_index()
+    return self.recv_return_key_index()
+
+  def send_return_key_index(self):
+    self._oprot.writeMessageBegin('return_key_index', TMessageType.CALL, self._seqid)
+    args = return_key_index_args()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_return_key_index(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = return_key_index_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "return_key_index failed: unknown result")
+
+  def checkparent(self, directory):
+    """
+    Parameters:
+     - directory
+    """
+    self.send_checkparent(directory)
+    return self.recv_checkparent()
+
+  def send_checkparent(self, directory):
+    self._oprot.writeMessageBegin('checkparent', TMessageType.CALL, self._seqid)
+    args = checkparent_args()
+    args.directory = directory
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_checkparent(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = checkparent_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "checkparent failed: unknown result")
+
   def addarq(self, name):
     """
     Parameters:
@@ -186,18 +255,22 @@ class Client(shared.SharedService.Client, Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "addarq failed: unknown result")
 
-  def add(self, requested):
+  def add(self, arqname, arqdir, arqdata):
     """
     Parameters:
-     - requested
+     - arqname
+     - arqdir
+     - arqdata
     """
-    self.send_add(requested)
+    self.send_add(arqname, arqdir, arqdata)
     return self.recv_add()
 
-  def send_add(self, requested):
+  def send_add(self, arqname, arqdir, arqdata):
     self._oprot.writeMessageBegin('add', TMessageType.CALL, self._seqid)
     args = add_args()
-    args.requested = requested
+    args.arqname = arqname
+    args.arqdir = arqdir
+    args.arqdata = arqdata
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -496,6 +569,8 @@ class Processor(shared.SharedService.Processor, Iface, TProcessor):
   def __init__(self, handler):
     shared.SharedService.Processor.__init__(self, handler)
     self._processMap["ping"] = Processor.process_ping
+    self._processMap["return_key_index"] = Processor.process_return_key_index
+    self._processMap["checkparent"] = Processor.process_checkparent
     self._processMap["addarq"] = Processor.process_addarq
     self._processMap["add"] = Processor.process_add
     self._processMap["request"] = Processor.process_request
@@ -542,6 +617,44 @@ class Processor(shared.SharedService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_return_key_index(self, seqid, iprot, oprot):
+    args = return_key_index_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = return_key_index_result()
+    try:
+      result.success = self._handler.return_key_index()
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("return_key_index", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_checkparent(self, seqid, iprot, oprot):
+    args = checkparent_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = checkparent_result()
+    try:
+      result.success = self._handler.checkparent(args.directory)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("checkparent", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
   def process_addarq(self, seqid, iprot, oprot):
     args = addarq_args()
     args.read(iprot)
@@ -567,7 +680,7 @@ class Processor(shared.SharedService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = add_result()
     try:
-      result.success = self._handler.add(args.requested)
+      result.success = self._handler.add(args.arqname, args.arqdir, args.arqdata)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -842,6 +955,245 @@ class ping_result:
   def __ne__(self, other):
     return not (self == other)
 
+class return_key_index_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('return_key_index_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class return_key_index_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('return_key_index_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class checkparent_args:
+  """
+  Attributes:
+   - directory
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'directory', None, None, ), # 1
+  )
+
+  def __init__(self, directory=None,):
+    self.directory = directory
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.directory = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('checkparent_args')
+    if self.directory is not None:
+      oprot.writeFieldBegin('directory', TType.STRING, 1)
+      oprot.writeString(self.directory)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.directory)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class checkparent_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('checkparent_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class addarq_args:
   """
   Attributes:
@@ -974,16 +1326,22 @@ class addarq_result:
 class add_args:
   """
   Attributes:
-   - requested
+   - arqname
+   - arqdir
+   - arqdata
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'requested', None, None, ), # 1
+    (1, TType.STRING, 'arqname', None, None, ), # 1
+    (2, TType.STRING, 'arqdir', None, None, ), # 2
+    (3, TType.STRING, 'arqdata', None, None, ), # 3
   )
 
-  def __init__(self, requested=None,):
-    self.requested = requested
+  def __init__(self, arqname=None, arqdir=None, arqdata=None,):
+    self.arqname = arqname
+    self.arqdir = arqdir
+    self.arqdata = arqdata
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -996,7 +1354,17 @@ class add_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.requested = iprot.readString()
+          self.arqname = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.arqdir = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.arqdata = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -1009,9 +1377,17 @@ class add_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('add_args')
-    if self.requested is not None:
-      oprot.writeFieldBegin('requested', TType.STRING, 1)
-      oprot.writeString(self.requested)
+    if self.arqname is not None:
+      oprot.writeFieldBegin('arqname', TType.STRING, 1)
+      oprot.writeString(self.arqname)
+      oprot.writeFieldEnd()
+    if self.arqdir is not None:
+      oprot.writeFieldBegin('arqdir', TType.STRING, 2)
+      oprot.writeString(self.arqdir)
+      oprot.writeFieldEnd()
+    if self.arqdata is not None:
+      oprot.writeFieldBegin('arqdata', TType.STRING, 3)
+      oprot.writeString(self.arqdata)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1022,7 +1398,9 @@ class add_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.requested)
+    value = (value * 31) ^ hash(self.arqname)
+    value = (value * 31) ^ hash(self.arqdir)
+    value = (value * 31) ^ hash(self.arqdata)
     return value
 
   def __repr__(self):
