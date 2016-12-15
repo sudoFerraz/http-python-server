@@ -52,12 +52,11 @@ class Menu(object):
         if selected == 1:
             print "Digite o caminho do arquivo"
             arq = raw_input()
-            print arq
+            #print arq
             answer = client.get(arq)
             print answer
-            print
         if selected == 2:
-            print "Digite o nome do arquivo"
+            print "Digite o caminho do arquivo"
             arq = raw_input()
             answer = client.list(arq)
             print answer
@@ -72,15 +71,14 @@ class Menu(object):
             answer = client.add(arq, directory, data)
             print answer
         if selected == 4:
-            print "Digite o nome do arquivo que deseja atualizar"
+            print "Digite o caminho do arquivo que deseja atualizar"
             arq = raw_input()
             print "Digite os dados novos do arquivo"
             data = raw_input()
-            request = arq + data
-            answer = client.update(request)
+            answer = client.update(arq, data)
             print answer
         if selected == 5:
-            print "Digite o nome do arquivo que deseja deletar"
+            print "Digite o caminho do arquivo que deseja deletar"
             arq = raw_input()
             answer = client.delete1(arq)
             print answer
@@ -91,16 +89,14 @@ class Menu(object):
             version = raw_input()
             print "Digite os dados que deseja atualizar"
             data = raw_input()
-            request = arq + version + data
-            answer = client.updatex(request)
+            answer = client.updatex(arq, version, data)
             print answer
         if selected == 7:
             print "Digite o nome do arquivo que deseja deletar"
-            raq = raw_input()
+            arq = raw_input()
             print "Digite a versao de target"
             version = raw_input()
-            request = arq + version + data
-            answer = client.deletex(request)
+            answer = client.deletex(arq, version)
             print answer
 
 global portr
@@ -131,8 +127,8 @@ except Thrift.TException, tx:
 
 
 
-requisicao = client.request("doido")
-print requisicao
+#requisicao = client.request("doido")
+#print requisicao
 menu = Menu()
 menu.user_menu(client)
 transport.close()
