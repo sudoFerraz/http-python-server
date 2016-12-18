@@ -137,7 +137,7 @@ service Calculator extends shared.SharedService {
 
    string getr(1:i64 arqkey),
 
-   bool check_arq_present(1:i64 arqkey),
+   i32 check_arq_present(1:i64 arqkey),
 
    i32 checkparent(1:string directory),
 
@@ -151,11 +151,21 @@ service Calculator extends shared.SharedService {
 
    string list1(1:string requested),
 
+   string listr(1:string arqkey),
+
    string update(1:string requested, 2:string data),
 
-   string delete(1:string requested),
+   string delete1(1:string requested),
+
+   string deleter(1:string arqkey),
+
+   string updater(1:string arqkey, 2:string arqdata),
 
    string updatex(1:string requested, 2:i32 version, 3:string data),
+
+   string updatexr(1:string arqkey, 2:string arqdata, 3:i32 arqversion),
+
+   string deletexr(1:string arqkey, 2:i32 arqversion),
 
    string deletex(1:string requested, 2:i32 Version),
 

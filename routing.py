@@ -32,15 +32,21 @@ def teste(porta):
     print found
     transport.close()
 
-def getnodes(myport):
+def getnodes(myport, otanto):
     """Retorna um dicionario com os nos vivos e seus keyindex."""
     print "tentando getnodes"
-    print "Digite o tanto ai fdp"
-    otanto = input()
+    #print "Digi
+    #te o tanto ai fdp"
+    #otanto = input()
+    myport = int(myport)
+    print type(myport)
+    print myport
     found = {}
-    for i in range(5555, 5555+otanto, 1):
-        if i is not myport:
+    for i in xrange(5555, 5555+otanto, 1):
+        print type(i)
+        if i != myport:
             try:
+                print i
                 transport = TSocket.TSocket('localhost', i)
                 transport = TTransport.TBufferedTransport(transport)
                 protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -50,14 +56,25 @@ def getnodes(myport):
                 found[i] = foundkeyindex
                 client.ping()
                 transport.close()
+                print i
             except Thrift.TException, tx:
                 pass
+
     print "passou getnodes"
     return found
 
+
+def findnodetable(dirkey, tableindex):
+    """Retorna o rightnode se tiver com o hash dentro."""
+    for port, arqlist in tableindex.iteritems():
+        for arq in arqlist:
+            if dirkey == arq:
+                return port
+    return 0
+
 def distribute_arq(arqdir, tableindex):
     """Procura o nodo certo para armazenar este arquivo e devolve sua porta."""
-    nodenr = len(tableindex)
+    nodenr = 0
     rightnode = 0
     root = httpserver.Parsing(arqdir)
     #Pegando o primeiro caminho para achar sua chave
@@ -69,6 +86,7 @@ def distribute_arq(arqdir, tableindex):
     portlist = []
     portcounter = 0
     for port, keylist in tableindex.iteritems():
+        nodenr = nodenr + 1
         portlist.append(port)
         portcounter = portcounter + 1
         for key in keylist:

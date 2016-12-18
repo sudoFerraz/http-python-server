@@ -27,16 +27,21 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void ping()')
   print('   return_key_index(string foo)')
   print('  string getr(i64 arqkey)')
-  print('  bool check_arq_present(i64 arqkey)')
+  print('  i32 check_arq_present(i64 arqkey)')
   print('  i32 checkparent(string directory)')
   print('  void addarq(string name)')
   print('  string add(string arqname, string arqdir, string arqdata)')
   print('  string request(string requested)')
   print('  string get(string requested)')
   print('  string list1(string requested)')
+  print('  string listr(string arqkey)')
   print('  string update(string requested, string data)')
   print('  string delete1(string requested)')
+  print('  string deleter(string arqkey)')
+  print('  string updater(string arqkey, string arqdata)')
   print('  string updatex(string requested, i32 version, string data)')
+  print('  string updatexr(string arqkey, string arqdata, i32 arqversion)')
+  print('  string deletexr(string arqkey, i32 arqversion)')
   print('  string deletex(string requested, i32 Version)')
   print('  i32 calculate(i32 logid, Work w)')
   print('  void zip()')
@@ -157,6 +162,12 @@ elif cmd == 'list1':
     sys.exit(1)
   pp.pprint(client.list1(args[0],))
 
+elif cmd == 'listr':
+  if len(args) != 1:
+    print('listr requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.listr(args[0],))
+
 elif cmd == 'update':
   if len(args) != 2:
     print('update requires 2 args')
@@ -169,11 +180,35 @@ elif cmd == 'delete1':
     sys.exit(1)
   pp.pprint(client.delete1(args[0],))
 
+elif cmd == 'deleter':
+  if len(args) != 1:
+    print('deleter requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.deleter(args[0],))
+
+elif cmd == 'updater':
+  if len(args) != 2:
+    print('updater requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.updater(args[0],args[1],))
+
 elif cmd == 'updatex':
   if len(args) != 3:
     print('updatex requires 3 args')
     sys.exit(1)
   pp.pprint(client.updatex(args[0],eval(args[1]),args[2],))
+
+elif cmd == 'updatexr':
+  if len(args) != 3:
+    print('updatexr requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.updatexr(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'deletexr':
+  if len(args) != 2:
+    print('deletexr requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.deletexr(args[0],eval(args[1]),))
 
 elif cmd == 'deletex':
   if len(args) != 2:

@@ -14,8 +14,10 @@ class arquivo():
 
     def __init__(self,nome):
         global file_hashes
-        self.nome = httpserver.Parsing(nome)
-        self.nome = self.nome[:-1]
+        #self.nome = httpserver.Parsing(nome)
+        #self.nome = self.nome[-1]
+        #self.nome = str(self.nome)
+        self.nome = nome
         self.filhos = []
         self.data = None
         self.created = int(time.time())
@@ -35,17 +37,19 @@ class arquivo():
         global file_hashes
         self.data = data
         self.modified = int(time.time())
-        file_hashes = merkle.merkle_handler(file_hashes, self.hash)
-        self.hash = str(uuid.uuid4().hex)
-        file_hashes.append(self.hash)
+        self.version = self.version + 1
+        #file_hashes = merkle.merkle_handler(file_hashes, self.hash)
+        #self.hash = str(uuid.uuid4().hex)
+        #file_hashes.append(self.hash)
 
     def remove_arq(self):
         """Removendo um arquivo e realocando seus filhos."""
         global file_hashes
-        self.pai.filhos.extend(self.filhos)
-        self.pai.filhos.remove(self)
-        self.pai.modified = int(time.time())
-        file_hashes = merkle.merkle_handler(file_hashes, self.hash)
+        if self.pai != None:
+            self.pai.filhos.extend(self.filhos)
+            self.pai.filhos.remove(self)
+            self.pai.modified = int(time.time())
+        #file_hashes = merkle.merkle_handler(file_hashes, self.hash)
         del self
 
     def merkle_hash(self):

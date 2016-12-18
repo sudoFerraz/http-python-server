@@ -58,7 +58,7 @@ class Menu(object):
         if selected == 2:
             print "Digite o caminho do arquivo"
             arq = raw_input()
-            answer = client.list(arq)
+            answer = client.list1(arq)
             print answer
         if selected == 3:
             print "Digite o nome do novo arquivo"
@@ -86,7 +86,8 @@ class Menu(object):
             print "Digite o nome do arquivo que deseja atualizar"
             arq = raw_input()
             print "Digite a versao de target"
-            version = raw_input()
+            version = input()
+            version = int(version)
             print "Digite os dados que deseja atualizar"
             data = raw_input()
             answer = client.updatex(arq, version, data)
@@ -95,7 +96,8 @@ class Menu(object):
             print "Digite o nome do arquivo que deseja deletar"
             arq = raw_input()
             print "Digite a versao de target"
-            version = raw_input()
+            version = input()
+            version = int(version)
             answer = client.deletex(arq, version)
             print answer
 
