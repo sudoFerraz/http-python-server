@@ -66,7 +66,7 @@ class CalculatorHandler:
       self.tableindex[self.port] = self.keyindex
 
   def check_arq_present(self, arqkey):
-      """Checa se um arquivo esta presente neste nodo."""
+      """Checa se um arquivo esta presente."""
       print "CHECKARQPRESENT"
       for i in range(0, len(self.keyindex), 1):
           key = self.keyindex[i]
@@ -190,9 +190,6 @@ class CalculatorHandler:
       self.tableindex[self.port] = self.keyindex
 
   def ping(self):
-      #self.tableindex = routing.getnodes(portr, 5)
-      #self.update_table()
-      #print hostport
       print 'ping()'
 
 
@@ -313,11 +310,46 @@ class CalculatorHandler:
           transporte.close()
           return answer
 
-  def deleter(self, arqkey):
-      mutex.acquire()
-      print "Operacao modificara outros arquivos [commit/abort]"
-      doido = raw_input()
-      if doido == "commit":
+  def checkglobalparents(self, directory, tableindex):
+      """Verifica se existem pais em outros nodos"""
+      dirlist = httpserver.Parsing(directory)
+      level = 0
+      #parentnodelist = []
+      parentname = "/" + dirlist[0]
+      parentkey = routing.findkey(parentname)
+      for i in range(0, len(dirlist), 1):
+          if not level < i:
+              parentname = parentname + "/" + dirlist[i]
+              parentkey = routing.findkey(parentname)
+              for port, keylist in tableindex.iteritems():
+                  for key in keylist:
+                      if parentkey == key:
+                          level = level + 1
+      return level
+
+
+  def deleter(self, arqkey, requested):
+      level = self.checkglobalparents(requested, self.tableindex)
+      if level != 0:
+          mutex.acquire()
+          print "Operacao modificara outros arquivos [commit/abort]"
+          doido = raw_input()
+          if doido == "commit":
+              for pos in self.arqindex:
+                  if pos.hash == arqkey:
+                      print "Hash do arquivo"
+                      print pos.hash
+                      pos.remove_arq()
+                      self.arqindex.remove(pos)
+                      answer = 'Apagado com sucesso'
+                  for pos in self.keyindex:
+                      if pos == arqkey:
+                      self.keyindex.remove(pos)
+          mutex.release()
+          if doido == "abort":
+              mutex.release()
+              answer = "Nao apagado"
+      elif level == 0:
           for pos in self.arqindex:
               if pos.hash == arqkey:
                   print "Hash do arquivo"
@@ -327,18 +359,14 @@ class CalculatorHandler:
                   answer = 'Apagado com sucesso'
               for pos in self.keyindex:
                   if pos == arqkey:
-                      self.keyindex.remove(pos)
-          mutex.release()
-      if doido == "abort":
-          mutex.release()
-          answer = "Nao apagado"
+                  self.keyindex.remove(pos)
       return answer
 
   def delete1(self, requested):
       self.update_table()
       arqkey = routing.findkey(requested)
       if self.check_arq_present(arqkey):
-          answer = self.deleter(arqkey)
+          answer = self.deleter(arqkey, requested)
           return answer
       else:
           rightnode = routing.findnodetable(arqkey, self.tableindex)
@@ -377,26 +405,41 @@ class CalculatorHandler:
           return answer
 
   def deletexr(self, arqkey, arqversion):
-       mutex.acquire()
-       print "Operacao modificara outros arquivos [commit/abort]"
-       doido = raw_input()
-       if doido == "commit":
-           for pos in self.arqindex:
-               if pos.hash == arqkey:
-                   if pos.version == arqversion:
-                       print "Hash do arquivo"
-                       print pos.hash
-                       pos.remove_arq()
-                       self.arqindex.remove(pos)
-                       answer = 'Apagado com sucesso'
-                       for pos in self.keyindex:
-                           if pos == arqkey:
-                                self.keyindex.remove(pos)
-                                mutex.release()
-       if doido == "abort":
-           mutex.release()
-           answer = "Nao apagado"
-       return answer
+      level = self.checkglobalparents(requested, self.tableindex)
+      if level != 0:
+          mutex.acquire()
+          print "Operacao modificara outros arquivos [commit/abort]"
+          doido = raw_input()
+          if doido == "commit":
+              for pos in self.arqindex:
+                  if pos.hash == arqkey:
+                      if pos.version == arqversion:
+                          print "Hash do arquivo"
+                          print pos.hash
+                          pos.remove_arq()
+                          self.arqindex.remove(pos)
+                          answer = 'Apagado com sucesso'
+                          for pos in self.keyindex:
+                              if pos == arqkey:
+                                  self.keyindex.remove(pos)
+          mutex.release()
+          if doido == "abort":
+              mutex.release()
+              answer = "Nao apagado"
+      elif level == 0:
+          for pos in self.arqindex:
+              if pos.hash == arqkey:
+                  print "Hash do arquivo"
+                  print pos.hash
+                  pos.remove_arq()
+                  self.arqindex.remove(pos)
+                  answer = 'Apagado com sucesso'
+              for pos in self.keyindex:
+                  if pos == arqkey:
+                  self.keyindex.remove(pos)
+      return answer
+
+
 
   def deletex(self, requested, arqversion):
       self.update_table()
@@ -444,7 +487,7 @@ class CalculatorHandler:
       print rightnode
       if rightnode == portr:
           level = self.checkparent(arqdir)
-          #Se nao tiver nenhum pai já adiciona pelo método
+          #Se nao tiver nenhum pai já adiciona pelo metodo
           if level == 0:
               check = self.addarq(arqdir)
               if check == True:

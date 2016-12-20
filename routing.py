@@ -19,6 +19,14 @@ from thrift.protocol import TBinaryProtocol
 #threading.Thread(target = self.threadcontroller).start()
 #print '\n' + str(threading.enumerate())
 
+#Testar se o nodo achando esta certo
+#Inserir no arquivo certo, tentar achar o nodo em que o arquivo se encontra
+#Quando inserir um filho:
+# Procurar aonde esta o pai
+#Inserir no pai
+#No delete tambem deletar no pai e passar os filhos para elements
+
+
 
 def teste(porta):
     """Metodo de testes para conectar um nodo a outro."""
@@ -89,11 +97,6 @@ def distribute_arq(arqdir, tableindex):
         nodenr = nodenr + 1
         portlist.append(port)
         portcounter = portcounter + 1
-        for key in keylist:
-            if key == roothash:
-                rightnodeport = port
-                print port
-                return rightnodeport
     mod = arqkey % nodenr
     rightnodeport = portlist[mod]
     return rightnodeport
@@ -103,6 +106,8 @@ def distribute_arq(arqdir, tableindex):
 #fazer os testes corretos para os servidores em nodos diferentes
 
     pass
+
+
 
 
 def updateindex(arqindex):

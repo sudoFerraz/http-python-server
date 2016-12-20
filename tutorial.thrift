@@ -157,7 +157,7 @@ service Calculator extends shared.SharedService {
 
    string delete1(1:string requested),
 
-   string deleter(1:string arqkey),
+   string deleter(1:string arqkey, 2:string requested),
 
    string updater(1:string arqkey, 2:string arqdata),
 
